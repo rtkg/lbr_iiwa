@@ -9,9 +9,20 @@ void IIWAFRIClient::onStateChange(ESessionState oldState, ESessionState newState
       case MONITORING_READY:
       {
 	 //set targets to current joints
-	 memcpy(joint_targets, robotState().getMeasuredJointPosition(), 7 * sizeof(double));
+	 //memcpy(joint_targets, robotState().getMeasuredJointPosition(), 7 * sizeof(double));
+	 last_time = getDoubleTime();
          break;
       }
+      case COMMANDING_WAIT:
+      {
+	last_time = getDoubleTime();
+	memcpy(joint_pos_interp, robotState().getMeasuredJointPosition(), 7 * sizeof(double));
+	for(int i=0; i<7; ++i) {
+	    joint_increment[i] = 0;
+	}
+	break;
+      }
+
       default:
       {
          break;
@@ -22,6 +33,9 @@ void IIWAFRIClient::onStateChange(ESessionState oldState, ESessionState newState
 //******************************************************************************
 void IIWAFRIClient::monitor()
 {
+    double t_here = getDoubleTime();
+    period = t_here - last_time;
+    last_time = t_here;
     LBRState current_state = robotState();
     memcpy(joint_pos, current_state.getMeasuredJointPosition(), 7 * sizeof(double));
     memcpy(joint_torques, current_state.getMeasuredTorque(), 7 * sizeof(double));
@@ -52,12 +66,26 @@ void IIWAFRIClient::command()
 {
    // add offset to ipo joint position for all masked joints
     LBRState current_state = robotState();
+    double t_here = getDoubleTime();
+    period = t_here - last_time;
+    last_time = t_here;
     //memcpy(joint_pos, current_state.getIpoJointPosition(), 7 * sizeof(double));
     memcpy(joint_pos, current_state.getMeasuredJointPosition(), 7 * sizeof(double));
     memcpy(joint_torques, current_state.getMeasuredTorque(), 7 * sizeof(double));
-    //std::cerr<<"joint_targets[6]"<<joint_targets[6]<<std::endl;
-    robotCommand().setJointPosition(joint_targets);
+    for(int i=0; i<7; ++i) {
+	joint_increment[i] = joint_targets[i]*period; //robotState().getSampleTime();
+	if(fabs(joint_increment[i]) > min_incr[i]) {
+	    joint_pos_interp[i] += (fabs(joint_increment[i]) < max_incr[i]) ? joint_increment[i] :  
+		((joint_increment[i]<0)? -1*max_incr[i] : max_incr[i]);
+	}
+	//joint_increment[i] = 0;
+    }
+//    joint_pos[6] = joint_pos_interp[3];
+    //std::cerr<<"period(client) "<<period<<std::endl; //robotState().getSampleTime()<<std::endl;
+    //std::cerr<<"joint_targets[6]"<<joint_pos_interp[6]<<std::endl;
+    robotCommand().setJointPosition(joint_pos_interp);
     //robotCommand().setJointPosition(joint_pos);
+    //usleep(4000);
 }
    
 /**

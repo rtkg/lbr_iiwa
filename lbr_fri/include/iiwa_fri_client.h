@@ -27,7 +27,25 @@ public:
 	joint_names.push_back("lbr_iiwa_joint_5");
 	joint_names.push_back("lbr_iiwa_joint_6");
 	joint_names.push_back("lbr_iiwa_joint_7");
-	for(int i=0; i<7; ++i) joint_targets[i] = 0;
+	for(int i=0; i<7; ++i) {
+	    joint_targets[i] = 0;
+	    joint_increment[i] = 0;
+	}
+	//per joint
+	max_incr[0] = 0.0058;
+	min_incr[0] = 0.0001;
+	max_incr[1] = 0.0058;
+	min_incr[1] = 0.001;
+	max_incr[2] = 0.0069;
+	min_incr[2] = 0.0001;
+	max_incr[3] = 0.0052;
+	min_incr[3] = 0.0002;
+	max_incr[4] = 0.009;
+	min_incr[4] = 0.0001;
+	max_incr[5] = 0.009;
+	min_incr[5] = 0.0001;
+	max_incr[6] = 0.009;
+	min_incr[6] = 0.0001;
     }; 
     ~IIWAFRIClient () { };   
    
@@ -55,17 +73,31 @@ public:
    void setJointTargets(const double (&com)[7]);
    
    ros::Time getTime(){
-       ros::Time t (robotState().getTimestampSec(), robotState().getTimestampNanoSec());
-       return t;
+       //ros::Time t (robotState().getTimestampSec(), robotState().getTimestampNanoSec());
+       //return t;
+       return ros::Time::now();
    };
    ros::Duration getPeriod() {
-	return ros::Duration(robotState().getSampleTime());
+	//return ros::Duration(robotState().getSampleTime());
+       return ros::Duration(period);
    }
 private:
    double joint_pos[7];
+   double joint_increment[7];
+   double joint_pos_interp[7];
+   double max_incr[7];
+   double min_incr[7];
    double joint_torques[7];
    double joint_targets[7];
    std::vector<std::string> joint_names;
+   double period;
+   double last_time;
+   double getDoubleTime()
+   {
+       struct timeval time;
+       gettimeofday(&time,NULL);
+       return time.tv_sec + time.tv_usec * 1e-6;
+   }
 };
 
 class IIWAFRIClientNative

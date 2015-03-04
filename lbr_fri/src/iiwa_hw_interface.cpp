@@ -17,7 +17,7 @@
 #include <boost/thread/mutex.hpp>
 
 #define DEFAULT_PORTID 30200
-//#define bFRI
+#define bFRI
 
 class IIWARobot : public hardware_interface::RobotHW
 {
@@ -141,7 +141,7 @@ class IIWARobot : public hardware_interface::RobotHW
 	void read() 
 	{
 #ifdef bFRI
-	    bool success = app.step();
+//	    bool success = app.step();
 #endif
 	    client.getJointsRaw(pos,vel,eff);
 	    if(first_vals) {
@@ -171,7 +171,10 @@ class IIWARobot : public hardware_interface::RobotHW
 	//should return current time
 	ros::Time get_time() { return client.getTime();  } ;
 	//should return duration since last update
-	ros::Duration get_period() { return client.getPeriod(); } ;
+	ros::Duration get_period() { 
+	    //std::cerr<<"period (ifce) "<<client.getPeriod().toSec()<<std::endl;
+	    return client.getPeriod(); 
+	} ;
 
     private:
 	hardware_interface::JointStateInterface jnt_state_interface;
@@ -186,10 +189,10 @@ class IIWARobot : public hardware_interface::RobotHW
 };
 static IIWARobot *robot;
 
-void handler(int signum) {
+/*void handler(int signum) {
     robot->client.step();
     delete robot;
-}
+}*/
 
 int main(int argc, char **argv)
 {
@@ -198,7 +201,7 @@ int main(int argc, char **argv)
     ros::NodeHandle param("~");
     robot = new IIWARobot(param);
 
-    signal(SIGTERM, &handler);
+    //signal(SIGTERM, &handler);
     ros::NodeHandle nh;
     controller_manager::ControllerManager cm(robot,nh);
     ros::AsyncSpinner spinner(1);
