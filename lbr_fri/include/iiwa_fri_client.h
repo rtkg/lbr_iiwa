@@ -113,12 +113,31 @@ public:
 	joint_names.push_back("lbr_iiwa_joint_5");
 	joint_names.push_back("lbr_iiwa_joint_6");
 	joint_names.push_back("lbr_iiwa_joint_7");
-	for(int i=0; i<7; ++i) joint_targets[i] = 0;
+	for(int i=0; i<7; ++i) {
+	    joint_targets[i] = 0;
+	    joint_increment[i] = 0;
+	}
+	//per joint
+	max_incr[0] = 0.0058;
+	min_incr[0] = 0.000;
+	max_incr[1] = 0.0058;
+	min_incr[1] = 0.00;
+	max_incr[2] = 0.0069;
+	min_incr[2] = 0.000;
+	max_incr[3] = 0.0052;
+	min_incr[3] = 0.000;
+	max_incr[4] = 0.009;
+	min_incr[4] = 0.000;
+	max_incr[5] = 0.009;
+	min_incr[5] = 0.000;
+	max_incr[6] = 0.009;
+	min_incr[6] = 0.000;
 	SIZE = 7;
 	send_established = false;
 	recv_established = false;
 	last_read_time = 0;
 	period = 0;
+	firstRead = true;
     }; 
     ~IIWAFRIClientNative () { 
 	joinThreads();
@@ -192,6 +211,10 @@ private:
    double joint_pos[7];
    double joint_torques[7];
    double joint_targets[7];
+   double joint_pos_interp[7];
+   double max_incr[7];
+   double min_incr[7];
+   double joint_increment[7];
    std::vector<std::string> joint_names;
    double period, last_read_time;
    Server *joints_recv, *command_send;
@@ -200,6 +223,7 @@ private:
    boost::condition_variable session_cond_;
    boost::condition_variable socket_cond_;
 
+   bool firstRead;
    bool recv_quit, send_quit, doStep;
    bool send_established, recv_established;
    int SIZE;

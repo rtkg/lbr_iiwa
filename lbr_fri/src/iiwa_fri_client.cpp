@@ -185,11 +185,20 @@ void IIWAFRIClientNative::getJointMsg(sensor_msgs::JointState &msg) {
 }
 
 void IIWAFRIClientNative::getJointsRaw(double (&pos)[7], double (&vel)[7], double (&eff)[7]) {
-    printf("getting joints\n");
+//    printf("getting joints\n");
     js_m.lock();
-    printf("got mutex\n");
+//    printf("got mutex\n");
     fflush(NULL);
     joints_recv->RecvDoubles(joint_pos, SIZE);
+    if(firstRead) {
+	firstRead = false;
+	memcpy(joint_pos_interp, joint_pos, 7 * sizeof(double));
+	for(int i=0; i<7; ++i) {
+	    joint_increment[i] = 0;
+//	    std::cout<<joint_pos_interp[i]<<std::endl;
+//	    std::cout<<joint_pos[i]<<std::endl;
+	}
+    }
     js_m.unlock();
     memcpy(pos, joint_pos, SIZE * sizeof(double));
     
@@ -199,17 +208,30 @@ void IIWAFRIClientNative::getJointsRaw(double (&pos)[7], double (&vel)[7], doubl
     period = now-last_read_time;
     if(last_read_time == 0) period = 0;
     last_read_time = now;
-    printf("time : %lf, period %lf\n", now,period);
+//    printf("time : %lf, period %lf\n", now,period);
     t_m.unlock();
-    printf("got joints\n");
+//    printf("got joints\n");
 }
 
 void IIWAFRIClientNative::setJointTargets(double (&com)[7]) {
-    printf("setting targets\n");
+//    printf("setting targets\n");
     jt_m.lock();
-    printf("got target mutex\n");
+//    printf("got target mutex\n");
     fflush(NULL);
-    command_send->SendDoubles(com, SIZE);
+    if(!firstRead) {
+	//command_send->SendDoubles(com, SIZE);
+	for(int i=0; i<7; ++i) {
+	    joint_increment[i] = com[i]*period;
+	    if(fabs(joint_increment[i]) > min_incr[i]) {
+		joint_pos_interp[i] += (fabs(joint_increment[i]) < max_incr[i]) ? joint_increment[i] :  
+		    ((joint_increment[i]<0)? -1*max_incr[i] : max_incr[i]);
+	    }
+//	    std::cerr<<"joint_targets["<<i<<"]"<<joint_pos_interp[i]<<" :: ";
+//	    std::cerr<<"joint_pos["<<i<<"]"<<joint_pos[i]<<"  ";
+	}
+//	std::cerr<<std::endl;
+	command_send->SendDoubles(joint_pos_interp, SIZE);
+    }
     jt_m.unlock();
-    printf("released target mutex\n");
+//    printf("released target mutex\n");
 }

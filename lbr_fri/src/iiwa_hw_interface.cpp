@@ -17,7 +17,7 @@
 #include <boost/thread/mutex.hpp>
 
 #define DEFAULT_PORTID 30200
-#define bFRI
+//#define bFRI
 
 class IIWARobot : public hardware_interface::RobotHW
 {
