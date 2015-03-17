@@ -79,9 +79,11 @@ void IIWAFRIClient::command()
 		((joint_increment[i]<0)? -1*max_incr[i] : max_incr[i]);
 	}
 	//joint_increment[i] = 0;
+//	std::cerr<<joint_pos_interp[i]<<" ";
     }
+//    std::cerr<<std::endl;
 //    joint_pos[6] = joint_pos_interp[3];
-    //std::cerr<<"period(client) "<<period<<std::endl; //robotState().getSampleTime()<<std::endl;
+    if(period>0.005) std::cerr<<"period(client) "<<period<<std::endl; //robotState().getSampleTime()<<std::endl;
     //std::cerr<<"joint_targets[6]"<<joint_pos_interp[6]<<std::endl;
     robotCommand().setJointPosition(joint_pos_interp);
     //robotCommand().setJointPosition(joint_pos);

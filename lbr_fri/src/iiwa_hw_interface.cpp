@@ -17,7 +17,7 @@
 #include <boost/thread/mutex.hpp>
 
 #define DEFAULT_PORTID 30200
-//#define bFRI
+#define bFRI
 
 class IIWARobot : public hardware_interface::RobotHW
 {
@@ -204,7 +204,7 @@ int main(int argc, char **argv)
     //signal(SIGTERM, &handler);
     ros::NodeHandle nh;
     controller_manager::ControllerManager cm(robot,nh);
-    ros::AsyncSpinner spinner(1);
+    ros::AsyncSpinner spinner(8);
     spinner.start();
     
     while (true)
