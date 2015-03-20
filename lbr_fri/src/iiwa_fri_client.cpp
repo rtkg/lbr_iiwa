@@ -225,14 +225,14 @@ void IIWAFRIClientNative::setJointTargets(double (&com)[7]) {
 	for(int i=0; i<7; ++i) {
 	    joint_increment[i] = com[i]*period;
 	    if(fabs(joint_increment[i]) > min_incr[i]) {
-		joint_pos_interp[i] += (fabs(joint_increment[i]) < max_incr[i]) ? joint_increment[i] :  
+		msg[i] += (fabs(joint_increment[i]) < max_incr[i]) ? joint_increment[i] :  
 		    ((joint_increment[i]<0)? -1*max_incr[i] : max_incr[i]);
 	    }
 //	    std::cerr<<"joint_targets["<<i<<"]"<<joint_pos_interp[i]<<" :: ";
 //	    std::cerr<<"joint_pos["<<i<<"]"<<joint_pos[i]<<"  ";
 	}
 //	std::cerr<<std::endl;
-	command_send->SendDoubles(joint_pos_interp, SIZE);
+	command_send->SendDoubles(msg, sizeof(msg));
     }
     jt_m.unlock();
 //    printf("released target mutex\n");

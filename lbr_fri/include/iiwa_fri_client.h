@@ -138,6 +138,10 @@ public:
 	last_read_time = 0;
 	period = 0;
 	firstRead = true;
+	//set default values for stiffness
+	for(int i=0; i<6; i++) {
+	    msg[i+7] = 2000;
+	}
     }; 
     ~IIWAFRIClientNative () { 
 	joinThreads();
@@ -215,6 +219,7 @@ private:
    double max_incr[7];
    double min_incr[7];
    double joint_increment[7];
+   double msg[13];
    std::vector<std::string> joint_names;
    double period, last_read_time;
    Server *joints_recv, *command_send;
