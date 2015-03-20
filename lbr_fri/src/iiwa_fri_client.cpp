@@ -195,6 +195,7 @@ void IIWAFRIClientNative::getJointsRaw(double (&pos)[7], double (&vel)[7], doubl
     if(firstRead) {
 	firstRead = false;
 	memcpy(joint_pos_interp, joint_pos, 7 * sizeof(double));
+	memcpy(msg, joint_pos, 7 * sizeof(double));
 	for(int i=0; i<7; ++i) {
 	    joint_increment[i] = 0;
 //	    std::cout<<joint_pos_interp[i]<<std::endl;
