@@ -10,7 +10,7 @@
 #include <ros/ros.h>
 #include "sensor_msgs/JointState.h"
 #include <signal.h>
-
+#include <lbr_fri/SetStiffness.h>
 #include <velvet_msgs/VNodeState.h>
 #include <velvet_msgs/VNodeTarget.h>
 
@@ -28,6 +28,7 @@ class IIWARobot : public hardware_interface::RobotHW
 	ClientApplication app;
 #else
 	IIWAFRIClientNative client;
+	ros::ServiceServer stiffness_client;
 #endif
 	std::string hostname;
 	int port;
@@ -52,6 +53,8 @@ class IIWARobot : public hardware_interface::RobotHW
 	    app.connect(port, hostname.c_str());
 #else
 	    client.startThreads();
+	    stiffness_client= param_nh.advertiseService("set_stiffness", &IIWARobot::stiff_callback, this);;
+
 #endif
 	    
 	    // connect and register the joint state interface
@@ -127,6 +130,14 @@ class IIWARobot : public hardware_interface::RobotHW
 #else
 	    client.step();
 #endif
+	}
+
+	bool stiff_callback(lbr_fri::SetStiffness::Request  &req,
+		    lbr_fri::SetStiffness::Response &res ) {
+#ifndef bFRI
+	    client.setStiffness(req.sx,req.sy,req.sz,req.sa,req.sb,req.sc);
+#endif
+	    return true;
 	}
 
 	void updateVelvetState(const velvet_msgs::VNodeStatePtr msg) {
