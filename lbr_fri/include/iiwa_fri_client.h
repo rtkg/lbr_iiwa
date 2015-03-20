@@ -217,7 +217,7 @@ public:
    void setStiffness(double sx, double sy, double sz, double sa, double sb, double sc) {
 	msg[7] = sx;
 	msg[8] = sy;
-	msg[9] = sx;
+	msg[9] = sz;
 	msg[10] = sa;
 	msg[11] = sb;
 	msg[12] = sc;
