@@ -139,8 +139,11 @@ public:
 	period = 0;
 	firstRead = true;
 	//set default values for stiffness
-	for(int i=0; i<6; i++) {
+	for(int i=0; i<3; i++) {
 	    msg[i+7] = 2000;
+	}
+	for(int i=3; i<6; i++) {
+	    msg[i+7] = 200;
 	}
     }; 
     ~IIWAFRIClientNative () { 
@@ -210,6 +213,14 @@ public:
        ros::Duration d (period); 
        t_m.unlock();
        return d;
+   }
+   void setStiffness(double sx, double sy, double sz, double sa, double sb, double sc) {
+	msg[7] = sx;
+	msg[8] = sy;
+	msg[9] = sx;
+	msg[10] = sa;
+	msg[11] = sb;
+	msg[12] = sc;
    }
 private:
    double joint_pos[7];
