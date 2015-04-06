@@ -215,12 +215,26 @@ public:
        return d;
    }
    void setStiffness(double sx, double sy, double sz, double sa, double sb, double sc) {
+	//reset the interpolation point
+	js_m.lock();
+	jt_m.lock();
+	memcpy(joint_pos_interp, joint_pos, 7 * sizeof(double));
+	memcpy(msg, joint_pos, 7 * sizeof(double));
+	jt_m.unlock();
+	js_m.unlock();
+	usleep(100000);
+	//set the new stiffness
+	js_m.lock();
+	jt_m.lock();
 	msg[7] = sx;
 	msg[8] = sy;
 	msg[9] = sz;
 	msg[10] = sa;
 	msg[11] = sb;
 	msg[12] = sc;
+	jt_m.unlock();
+	js_m.unlock();
+	usleep(500000);
    }
 private:
    double joint_pos[7];
